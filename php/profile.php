@@ -9,7 +9,6 @@
     }elseif($method == "POST"){
         $body = file_get_contents('php://input');
         $user = json_decode($body);
-        
         $sessionId = $_GET["sessionId"];
         $username = getUsername($sessionId);
         $response = new stdClass();
@@ -33,6 +32,7 @@
         $userProfile = getUserProfile($username);
         
         if(!isset($userProfile->username)){
+            $user->username = $username;
             $bulkWrite->insert($user);    
         }else {
             $bulkWrite->update(['username' => $username], ['$set' => $user]);
