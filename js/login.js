@@ -1,4 +1,20 @@
 $(document).ready(function(){
+    var sessionId = localStorage.getItem("sessionId");
+
+    $.ajax({
+        url: "php/login.php?sessionId="+sessionId,
+        type: "GET",
+        datatype: "json",
+        success: function(data){
+            console.log(data);
+            loginResponse = JSON.parse(data);
+            console.log(loginResponse);
+            if(loginResponse.exists){
+                window.location.href = "profile.html"
+            }
+        }
+    })
+    
     
     $("#loginButton").click(function(event){
         event.preventDefault()
@@ -11,7 +27,7 @@ $(document).ready(function(){
         };
 
         $.ajax({
-            url:  "php/login.php",
+            url: "php/login.php",
             type: "POST",
             datatype: "json",
             contentType: "application/json",
@@ -21,11 +37,13 @@ $(document).ready(function(){
                 loginResponse = JSON.parse(data);
                 console.log(loginResponse);
                 if(loginResponse.success){
-                    window.location.href = "register.html"
+                    localStorage.setItem("sessionId", loginResponse.sessionId);
+                    window.location.href = "profile.html"
                 }else {
                     $("#message").html("Invalid username or password")
                 }
             }
         })
     })
+    
 })

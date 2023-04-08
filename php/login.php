@@ -5,17 +5,24 @@
         $body = file_get_contents('php://input');
         $loginRequest = json_decode($body);
         login($loginRequest->username, $loginRequest->password);
+    }elseif($method == "GET"){
+        $sessionId = $_GET["sessionId"];
+        if(isset($_GET["logout"])){
+            logout($sessionId);
+        }else {
+            isSessionActive($sessionId);
+        }
     }
 
     function isSessionActive($sessionId){
         $redis = getRedisConnection();
         $response = new stdClass();
         if($redis->get($sessionId) != null){
-            
+            $response->exists = true;
         }else {
-
+            $response->exists = false;
         }
-        echo $response;
+        echo json_encode($response);
     }
 
     function login($username, $password){
@@ -40,6 +47,17 @@
 
         echo json_encode($loginResponse);
     }
+
+    function logout($sessionId){
+        $redis = getRedisConnection();
+        $redis->delete($sessionId);
+
+        $logoutResponse = new stdClass();
+        $logoutResponse->success = true;
+        
+        echo json_encode($logoutResponse);
+    }
+
 
     function getRedisConnection(){
         $redis_host = getenv("REDIS_HOST");

@@ -1,5 +1,4 @@
 <?php
-
     $method = $_SERVER["REQUEST_METHOD"];
 
     if($method == "GET"){
@@ -12,7 +11,7 @@
     }
 
     function checkUsername($username){
-        $conn = getConnection();
+        $conn = getDBConnection();
 
         $stmt = $conn->prepare("select username from users where username=?");
         $stmt->bind_param("s",$username);
@@ -26,6 +25,7 @@
         }else{
             $response->exists = false;
         }
+
 
         echo json_encode($response);
     }
