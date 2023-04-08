@@ -32,18 +32,24 @@
 
     function registerUser($user){
         $conn = getDBConnection();
-
-        $stmt = $conn->prepare("insert into users (username, password) values(?, ?)");
-        $stmt->bind_param("ss", $user->username, $user->password);
-        
         $response = new stdClass();
-        try{
-            $stmt->execute();
-            $response->registered = true;
-        }catch(Exception $ex){
+
+        if(!empty($user->username) && !empty($user->password)){
+            $stmt = $conn->prepare("insert into users (username, password) values(?, ?)");
+            $stmt->bind_param("ss", $user->username, $user->password);
+            try{
+                $stmt->execute();
+                $response->registered = true;
+            }catch(Exception $ex){
+                $response->registered = false;
+                $response->error = $ex->getMessage();
+            }
+        }else {
             $response->registered = false;
-            $response->error = $ex->getMessage();
+            $response->error = "Username and password are required fields.";
         }
+
+        
         echo json_encode($response);
     }
 

@@ -32,16 +32,22 @@ $(document).ready(function(){
                                 registerResponse = JSON.parse(data);
                                 if(registerResponse.registered){
                                     console.log("Successfully registered");
+                                    $("#message").addClass("alert-success");
+                                    $("#message").html("User successfully registered.");
                                     window.location.href = "login.html"
                                 }else{
-                                    $("#message").html("Registeration failed");
+                                    $("#message").removeClass("alert-danger");
+                                    $("#message").addClass("alert-danger");
+                                    $("#message").html(registerResponse.error);
                                 }
                             }
                         })
                     }else{
+                        $("#message").addClass("alert-danger");
                         $("#message").html("Password and Confirm Password doesn't match");
                     }
                 }else{
+                    $("#message").addClass("alert-danger");
                     $("#message").html("User already exists");
                 }
             }
