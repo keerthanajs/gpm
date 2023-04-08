@@ -40,6 +40,7 @@ $(document).ready(function(){
                     localStorage.setItem("sessionId", loginResponse.sessionId);
                     window.location.href = "profile.html"
                 }else {
+                    $("#message").addClass("alert-danger");
                     $("#message").html("Invalid username or password")
                 }
             }
