@@ -1,15 +1,62 @@
 <?php
+    $method = $_SERVER["REQUEST_METHOD"];
 
-    function getUsername(){
+    if($method == "GET"){
+        $sessionId = $_GET["sessionId"];
+        $username = getUsername($sessionId);
+        $profile = getUserProfile($username);
+        echo json_encode($profile);
+    }elseif($method == "POST"){
+        $body = file_get_contents('php://input');
+        $user = json_decode($body);
+        
+        $sessionId = $_GET["sessionId"];
+        $username = getUsername($sessionId);
+        $response = new stdClass();
 
+        if(!empty($username)){
+            saveProfile($username, $user);
+            $response->success = true;
+            $response->message = "Profile saved successfully";
+        }else {
+            $response->success = false;
+            $response->message = "Invalid session";
+        }
+        echo json_encode($response);
     }
 
-    function updateProfile(){
+    function saveProfile($username, $user){
+        $manager = getMongoDBManager();
+
+        $bulkWrite=new MongoDB\Driver\BulkWrite();
+
+        $userProfile = getUserProfile($username);
         
+        if(!isset($userProfile->username)){
+            $bulkWrite->insert($user);    
+        }else {
+            $bulkWrite->update(['username' => $username], ['$set' => $user]);
+        }
+        
+        $manager->executeBulkWrite('guvidb.profiles', $bulkWrite);
+    }
+
+    function getUsername($sessionId){
+        $redis = getRedisConnection();
+        $username = $redis->get($sessionId);
+        return $username;
     }
 
     function getUserProfile($username){
-
+        $manager = getMongoDBManager();
+        $query = new MongoDB\Driver\Query(array('username' => $username));
+        $cursor = $manager->executeQuery('guvidb.profiles', $query);
+        $document = new stdClass();
+        foreach($cursor as $doc){
+            $document = $doc;
+            break;
+        }
+        return $document;
     }
 
     function getRedisConnection(){
@@ -21,18 +68,11 @@
         return $redis;
     }
 
-    function getDBConnection(){
-        $db_host = getenv("DB_HOST");
-        $db_user = getenv("DB_USER");
-        $db_pass = getenv("DB_PASS");
-        $db_name = getenv("DB_NAME");
-
-        $conn =  new mysqli($db_host, $db_user, $db_pass, $db_name);
-
-        if($conn->connect_error){
-            die("Connection failed" . $conn->connect_error);
-        }
-
-        return $conn;
+    function getMongoDBManager(){
+        $mongo_host = getenv("MONGO_HOST");
+        $mongo_port = getenv("MONGO_PORT");
+        
+        $manager = new MongoDB\Driver\Manager("mongodb://$mongo_host:$mongo_port");
+        return $manager;
     }
 ?>
