@@ -29,14 +29,21 @@
         $conn = getDBConnection();
         $redisConn = getRedisConnection();
 
-        $stmt = $conn->prepare("select username, password from users where username=? and password=?");
-        $stmt->bind_param("ss", $username, $password);
+        $stmt = $conn->prepare("select password from users where username=?");
+        $stmt->bind_param("s", $username);
 
         $stmt->execute();
         $result = $stmt->get_result();
 
+        $passwordVerified = false;
+        if($row = mysqli_fetch_row($result)){
+            if(password_verify($password, $row[0])){
+                $passwordVerified = true;
+            }
+        }
+
         $loginResponse = new stdClass();
-        if(mysqli_num_rows($result) == 1){
+        if($passwordVerified){
             $sessionId = uniqid();
             $loginResponse->success = true;
             $loginResponse->sessionId = $sessionId;

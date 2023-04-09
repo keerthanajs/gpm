@@ -1,4 +1,9 @@
 <?php
+    # register service
+    
+    # GET method is used for checking if username is already taken
+    # POST method is used for registering a user in mysql database
+
     $method = $_SERVER["REQUEST_METHOD"];
 
     if($method == "GET"){
@@ -36,7 +41,8 @@
 
         if(!empty($user->username) && !empty($user->password)){
             $stmt = $conn->prepare("insert into users (username, password) values(?, ?)");
-            $stmt->bind_param("ss", $user->username, $user->password);
+            $hashedPassword = password_hash($user->password, PASSWORD_BCRYPT);
+            $stmt->bind_param("ss", $user->username, $hashedPassword);
             try{
                 $stmt->execute();
                 $response->registered = true;
