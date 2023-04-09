@@ -15,6 +15,19 @@ $(document).ready(function(){
         }
     });
 
+    function calculate_age(dob) { 
+        var diff_ms = Date.now() - Date.parse(dob);
+        var age_dt = new Date(diff_ms); 
+      
+        return Math.abs(age_dt.getUTCFullYear() - 1970);
+    }
+
+    $("#dob").blur(function(){
+        var dob = $("#dob").val();
+        var age = calculate_age(dob);
+        $("#age").html(age);
+    })
+
     $.ajax({
         url: "php/profile.php?sessionId="+sessionId,
         type: "GET",
@@ -22,12 +35,15 @@ $(document).ready(function(){
             console.log(data);
             user = JSON.parse(data);
             if('username' in user){
+                //$("#username").html(user.username);
                 $("#firstname").val(user.firstname);
                 $("#lastname").val(user.lastname);
                 $("#dob").val(user.dob);
-                $("#age").val(user.age);
                 $("#email").val(user.email);
                 $("#phone").val(user.phone);
+
+                var age = calculate_age(user.dob);
+                $('#age').html(age);
             }
         }
     })
@@ -56,7 +72,6 @@ $(document).ready(function(){
         event.preventDefault()
         sessionId = localStorage.getItem("sessionId");
         console.log("Save button "+sessionId);
-
         var firstname = $("#firstname").val();
         var lastname = $("#lastname").val();
         var dob = $("#dob").val();
